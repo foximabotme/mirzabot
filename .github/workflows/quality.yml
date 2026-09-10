@@ -83,6 +83,10 @@ jobs:
 
           status=$(cat /tmp/mirzabot-status 2>/dev/null || true)
           if [ "$status" != "200" ] || ! grep -q "Unauthorized access" /tmp/mirzabot-index.html; then
+            response=$(tr '\n' ' ' < /tmp/mirzabot-index.html 2>/dev/null || true)
+            server_log=$(tr '\n' ' ' < /tmp/mirzabot-server.log 2>/dev/null || true)
+            file_log=$(tr '\n' ' ' < error_log 2>/dev/null || true)
+            echo "::error title=Smoke test failed::HTTP status=${status}; response=${response}; server_log=${server_log}; file_log=${file_log}"
             cat /tmp/mirzabot-server.log
             if [ -f error_log ]; then
               cat error_log
