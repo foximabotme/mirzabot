@@ -639,7 +639,7 @@ function usr_active_bot_agent(array $data, string $method): void
     }
     $new_code = str_replace('BotTokenNew', $data['token'], $contentconfig);
     file_put_contents($dirsource . "/config.php", $new_code);
-    file_get_contents("https://api.telegram.org/bot{$data['token']}/setwebhook?url=https://$domainhosts/vpnbot/{$data['chat_id']}{$botUsername}/index.php");
+    telegram('setwebhook', mirzaTelegramWebhookParameters("https://$domainhosts/vpnbot/{$data['chat_id']}{$botUsername}/index.php"), $data['token']);
     file_get_contents(sprintf($textbotlang['Admin']['agentbot']['activatedUrl'], $data['token'], $data['chat_id']));
     $datasetting = json_encode(array(
         "minpricetime" => 4000,
