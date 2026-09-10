@@ -2,7 +2,10 @@
 
 date_default_timezone_set('Asia/Tehran');
 ini_set('default_charset', 'UTF-8');
-ini_set('error_log', 'error_log');
+ini_set(
+    'error_log',
+    getenv('RAILWAY_ENVIRONMENT') !== false ? '/proc/self/fd/2' : 'error_log'
+);
 ini_set('memory_limit', '512M');
 require_once 'config.php';
 require_once 'botapi.php';
@@ -12,6 +15,10 @@ mirzaEnsureInstallerRemoved();
 require_once 'keyboard.php';
 require_once 'vendor/autoload.php';
 require_once 'panels.php';
+ini_set(
+    'error_log',
+    getenv('RAILWAY_ENVIRONMENT') !== false ? '/proc/self/fd/2' : 'error_log'
+);
 $textbotlang = languagechange();
 $text = restoreCustomEmojiLabel($text);
 #-----------telegram_ip_ranges------------#

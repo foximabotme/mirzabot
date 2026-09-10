@@ -1,7 +1,10 @@
 <?php
 require_once 'config.php';
 require_once 'request.php';
-ini_set('error_log', 'error_log');
+ini_set(
+    'error_log',
+    getenv('RAILWAY_ENVIRONMENT') !== false ? '/proc/self/fd/2' : 'error_log'
+);
 function alirezaCookiePath($code_panel)
 {
     return sys_get_temp_dir() . '/mirza_alireza_' . md5((string) $code_panel) . '.cookie';

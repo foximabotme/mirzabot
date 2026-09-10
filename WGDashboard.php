@@ -1,6 +1,9 @@
 <?php
 include('config.php');
-ini_set('error_log', 'error_log');
+ini_set(
+    'error_log',
+    getenv('RAILWAY_ENVIRONMENT') !== false ? '/proc/self/fd/2' : 'error_log'
+);
 
 
 function get_userwg($username, $namepanel)
