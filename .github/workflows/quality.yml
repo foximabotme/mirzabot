@@ -10,14 +10,40 @@ permissions:
 
 jobs:
   php:
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.5']
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mirzabot
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      MYSQL_URL: mysql://root:root@127.0.0.1:3306/mirzabot
+      BOT_TOKEN: 123456789:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      OWNER_ID: 123456789
+      BOT_USERNAME: mirzabot_test_bot
+      TELEGRAM_WEBHOOK_SECRET: railway_test_webhook_secret_123456789
+      MIRZA_DATA_DIR: /tmp/mirzabot-data
+      RAILWAY_ENVIRONMENT: test
     steps:
       - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ matrix.php }}
           extensions: curl, fileinfo, gd, mbstring, pdo_mysql, zip
           tools: composer
 
@@ -32,3 +58,34 @@ jobs:
 
       - name: Check startup script
         run: bash -n start-container.sh
+
+      - name: Bootstrap a fresh database
+        run: |
+          mkdir -p "$MIRZA_DATA_DIR"
+          php db/bootstrap.php
+
+      - name: Smoke test the webhook entrypoint
+        run: |
+          set -euo pipefail
+          php -d display_errors=0 -d log_errors=1 -d error_log=/tmp/mirzabot-server.log -S 127.0.0.1:8080 -t . >/tmp/mirzabot-server.log 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 20); do
+            if curl -sS -o /tmp/mirzabot-index.html -w '%{http_code}' http://127.0.0.1:8080/index.php > /tmp/mirzabot-status; then
+              break
+            fi
+            sleep 0.5
+          done
+
+          status=$(cat /tmp/mirzabot-status 2>/dev/null || true)
+          if [ "$status" != "200" ] || ! grep -q "Unauthorized access" /tmp/mirzabot-index.html; then
+            cat /tmp/mirzabot-server.log
+            if [ -f error_log ]; then
+              cat error_log
+            fi
+            exit 1
+          fi
