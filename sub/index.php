@@ -8,8 +8,8 @@ require_once __DIR__ . '/../panels.php';
 $ManagePanel = new ManagePanel();
 header('Content-Type: text/plain; charset=utf-8');
 $url = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
-$parts = explode("/sub/", (string) $url);
-$token = trim($parts[1] ?? '');
+$parts = explode('/sub/', (string) $url);
+$token = trim((string) ($_GET['token'] ?? ($parts[1] ?? '')));
 if ($token === '' || !preg_match('/^[a-f0-9]{4,64}$/i', $token)) {
     echo "ERROR!";
     exit;
