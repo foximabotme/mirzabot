@@ -1,5 +1,10 @@
 <?php
 
+if (getenv('RAILWAY_ENVIRONMENT') !== false) {
+    ini_set('log_errors', '1');
+    ini_set('error_log', '/proc/self/fd/2');
+}
+
 /**
  * MirzaBot configuration.
  *

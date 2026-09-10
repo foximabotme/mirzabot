@@ -1,7 +1,10 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config.php';
-ini_set('error_log', 'error_log');
+ini_set(
+    'error_log',
+    getenv('RAILWAY_ENVIRONMENT') !== false ? '/proc/self/fd/2' : 'error_log'
+);
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
