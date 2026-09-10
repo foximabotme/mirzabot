@@ -1,0 +1,60 @@
+{
+    admin off
+    persist_config off
+    auto_https off
+    {$CADDY_GLOBAL_OPTIONS}
+    log {
+        format json
+        output stderr
+        level INFO
+    }
+    frankenphp {
+        {$FRANKENPHP_CONFIG}
+    }
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+:{$PORT:80} {
+    root * /app
+    encode zstd br gzip
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        -X-Powered-By
+    }
+
+    route {
+        @agentWebhook path_regexp agentWebhook ^/vpnbot/[0-9]+[A-Za-z0-9_]+/index\.php$
+        handle @agentWebhook {
+            php_server
+        }
+
+        @private path /config.php /function.php /botapi.php /keyboard.php /admin.php /table.php /jdf.php /panels.php /version /Caddyfile /php.ini /railway.json /start-container.sh /.git/* /.env* /db/* /lang/* /install/* /cronbot/* /vpnbot/* /api/utils.php /api/hash.txt /railway/runtime.php /railway/TransferManager.php /railway/bootstrap.php /railway/cron_runner.php /railway/prepare_runtime.php
+        respond @private 404
+
+        @privateFiles path_regexp privateFiles (?i)\.(?:sql|zip|log|sh|lock|json)$
+        respond @privateFiles 404
+
+        redir /app /app/ 308
+
+        handle /app/* {
+            try_files {path} /app/index.php
+            php_server
+            file_server
+        }
+
+        @subscription path_regexp subscription ^/sub/([A-Fa-f0-9]{4,64})/?$
+        rewrite @subscription /sub/index.php?token={re.subscription.1}
+
+        @apiExtensionless path_regexp apiExtensionless ^/api/([^/.]+)$
+        rewrite @apiExtensionless /api/{re.apiExtensionless.1}.php
+
+        php_server
+        file_server {
+            hide .git
+            hide .env*
+        }
+    }
+}

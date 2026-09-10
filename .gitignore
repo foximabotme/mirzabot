@@ -9,6 +9,10 @@ composer.phar
 error_log
 /storage/
 /api/hash.txt
+.env
+.env.*
+!.env.example
 *.xlsx
 graphify-out
 docs
+/railway-local-data/

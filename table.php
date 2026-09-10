@@ -4,6 +4,6 @@ require_once __DIR__ . '/db/bootstrap.php';
 
 global $domainhosts;
 
-telegram('setwebhook', [
-    'url' => "https://$domainhosts/index.php"
-]);
+if ($domainhosts !== '') {
+    telegram('setwebhook', mirzaTelegramWebhookParameters("https://$domainhosts/index.php"));
+}

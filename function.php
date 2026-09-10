@@ -1,6 +1,6 @@
 <?php
-require_once 'vendor/autoload.php';
-require 'config.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/config.php';
 ini_set('error_log', 'error_log');
 
 use Endroid\QrCode\Builder\Builder;
@@ -1627,6 +1627,59 @@ function checktelegramip()
     return false;
 }
 
+function mirzaWebhookSecret(): string
+{
+    $secret = getenv('TELEGRAM_WEBHOOK_SECRET');
+    if ($secret === false) {
+        return '';
+    }
+
+    $secret = trim((string) $secret);
+    if ($secret !== '' && !preg_match('/^[A-Za-z0-9_-]{1,256}$/', $secret)) {
+        error_log('TELEGRAM_WEBHOOK_SECRET contains unsupported characters.');
+        return '';
+    }
+
+    return $secret;
+}
+
+function mirzaTelegramWebhookParameters(string $url): array
+{
+    $parameters = ['url' => $url];
+    $secret = mirzaWebhookSecret();
+    if ($secret !== '') {
+        $parameters['secret_token'] = $secret;
+    }
+
+    return $parameters;
+}
+
+function mirzaTelegramWebhookRequestIsAuthorized(): bool
+{
+    $secret = mirzaWebhookSecret();
+    if ($secret === '') {
+        return checktelegramip();
+    }
+
+    $received = $_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';
+    return is_string($received) && hash_equals($secret, $received);
+}
+
+function mirzaDataDirectory(): string
+{
+    $directory = getenv('MIRZA_DATA_DIR');
+    $directory = $directory === false || trim((string) $directory) === ''
+        ? '/data/mirzabot'
+        : trim((string) $directory);
+
+    return rtrim($directory, '/');
+}
+
+function mirzaRestoreInProgress(): bool
+{
+    return is_file(mirzaDataDirectory() . '/restore.lock');
+}
+
 function isClientIpInRange($clientIp, $lowerBound, $upperBound)
 {
     $clientPacked = inet_pton($clientIp);
@@ -1646,6 +1699,11 @@ function isClientIpInRange($clientIp, $lowerBound, $upperBound)
 }
 function addCronIfNotExists($cronCommand)
 {
+    if (getenv('RAILWAY_ENVIRONMENT') !== false || getenv('MIRZA_INTERNAL_SCHEDULER') === '1') {
+        // Railway runs these jobs through railway/cron_runner.php.
+        return true;
+    }
+
     $commands = is_array($cronCommand) ? $cronCommand : [$cronCommand];
     $commands = array_values(array_filter(array_map('trim', $commands), static function ($command) {
         return $command !== '';

@@ -15,9 +15,13 @@ require_once 'panels.php';
 $textbotlang = languagechange();
 $text = restoreCustomEmojiLabel($text);
 #-----------telegram_ip_ranges------------#
-if (!checktelegramip())
+if (!mirzaTelegramWebhookRequestIsAuthorized())
     die("Unauthorized access");
 #-----------end telegram_ip_ranges------------#
+if (mirzaRestoreInProgress()) {
+    http_response_code(503);
+    die('Restore in progress');
+}
 if ($is_bot)
     return;
 if (isset($update['chat_member'])) {

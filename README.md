@@ -4,6 +4,8 @@
 
 ### A powerful Telegram bot for selling VPN services — with fully automated config creation.
 
+### 🚂 Railway-ready fork: persistent storage, internal scheduler, and one-file backup/restore
+
 <p>
   <a href="https://t.me/mirzapanel">
     <img src="https://img.shields.io/badge/Telegram-Channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"/>
@@ -44,6 +46,7 @@
 - [💳 Payment Gateways](#-payment-gateways)
 - [⚙️ Features](#️-features)
 - [🚀 Installation](#-installation)
+  - [Railway installation](#railway-installation)
   - [Prerequisites](#prerequisites)
   - [Install](#install)
   - [Update](#update)
@@ -160,6 +163,20 @@ Mirza Bot integrates with the most popular VPN and network management panels:
 ---
 
 ## 🚀 Installation
+
+### Railway installation
+
+This fork can run directly on Railway with MySQL and a Volume. It automatically creates/updates the database schema, registers secure webhooks for the main and agent bots, and runs the one-minute scheduled jobs inside the service.
+
+For the complete Persian step-by-step guide, see **[RAILWAY.md](RAILWAY.md)**.
+
+The protected transfer page is available after deployment at:
+
+```text
+https://YOUR-DOMAIN/railway/transfer.php
+```
+
+It exports the database and persistent bot files as one ZIP and can restore that ZIP into a different Railway account. The original Ubuntu/VPS installer below remains available for non-Railway installations.
 
 ### Prerequisites
 
