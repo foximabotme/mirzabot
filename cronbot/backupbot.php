@@ -182,6 +182,7 @@ $isDumped = false;
 
 if (isExecAvailable()) {
     $command = 'mysqldump -h ' . escapeshellarg($dbhost)
+        . ' -P ' . escapeshellarg((string) ($dbport ?? '3306'))
         . ' -u ' . escapeshellarg($usernamedb)
         . ' -p' . escapeshellarg($passworddb)
         . ' --no-tablespaces --ssl-mode=DISABLED ' . escapeshellarg($dbname)
